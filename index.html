@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Simple Time Converter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 500px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+    input, select, button {
+      padding: 8px;
+      margin: 8px 0;
+      width: 100%;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f2f2f2;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Time Zone Converter</h2>
+
+<label>Select Time:</label>
+<input type="time" id="timeInput">
+
+<label>Select Timezone:</label>
+<select id="timezoneSelect">
+  <option value="Asia/Kolkata">IST (India)</option>
+  <option value="America/New_York">EST (US)</option>
+  <option value="Europe/London">UK Time</option>
+</select>
+
+<button onclick="convertTime()">Convert</button>
+
+<div class="result" id="output"></div>
+
+<script>
+function convertTime() {
+  const timeInput = document.getElementById("timeInput").value;
+  const selectedZone = document.getElementById("timezoneSelect").value;
+
+  if (!timeInput) {
+    alert("Please select a time.");
+    return;
+  }
+
+  const today = new Date().toISOString().split("T")[0];
+  const date = new Date(`${today}T${timeInput}:00`);
+
+  const formatter = (timezone) =>
+    new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: timezone
+    }).format(date);
+
+  const ist = formatter("Asia/Kolkata");
+  const est = formatter("America/New_York");
+  const uk = formatter("Europe/London");
+
+  document.getElementById("output").innerHTML = `
+    <strong>Converted Times:</strong><br><br>
+    🇮🇳 IST: ${ist}<br>
+    🇺🇸 EST: ${est}<br>
+    🇬🇧 UK: ${uk}
+  `;
+}
+</script>
+
+</body>
+</html>
