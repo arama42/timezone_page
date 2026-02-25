@@ -2,7 +2,11 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Simple Time Converter</title>
+  <title>Time Converter</title>
+
+  <!-- Luxon CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3/build/global/luxon.min.js"></script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,16 +29,16 @@
 </head>
 <body>
 
-<h2>Time Zone Converter</h2>
+<h2>Simple Timezone Converter</h2>
 
 <label>Select Time:</label>
 <input type="time" id="timeInput">
 
 <label>Select Timezone:</label>
 <select id="timezoneSelect">
-  <option value="Asia/Kolkata">IST (India)</option>
-  <option value="America/New_York">EST (US)</option>
-  <option value="Europe/London">UK Time</option>
+  <option value="Asia/Kolkata">IST</option>
+  <option value="America/New_York">EST</option>
+  <option value="UTC">GMT</option>
 </select>
 
 <button onclick="convertTime()">Convert</button>
@@ -42,38 +46,39 @@
 <div class="result" id="output"></div>
 
 <script>
+const { DateTime } = luxon;
+
 function convertTime() {
-  const timeInput = document.getElementById("timeInput").value;
+  const timeValue = document.getElementById("timeInput").value;
   const selectedZone = document.getElementById("timezoneSelect").value;
 
-  if (!timeInput) {
+  if (!timeValue) {
     alert("Please select a time.");
     return;
   }
 
-  const today = new Date().toISOString().split("T")[0];
-  const date = new Date(`${today}T${timeInput}:00`);
+  const [hour, minute] = timeValue.split(":");
 
-  const formatter = (timezone) =>
-    new Intl.DateTimeFormat('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true,
-      timeZone: timezone
-    }).format(date);
+  // Create time in selected timezone
+  const baseTime = DateTime.now()
+    .setZone(selectedZone)
+    .set({ hour: parseInt(hour), minute: parseInt(minute), second: 0 });
 
-  const ist = formatter("Asia/Kolkata");
-  const est = formatter("America/New_York");
-  const uk = formatter("Europe/London");
+  const ist = baseTime.setZone("Asia/Kolkata").toFormat("hh:mm a");
+  const est = baseTime.setZone("America/New_York").toFormat("hh:mm a");
+  const gmt = baseTime.setZone("UTC").toFormat("hh:mm a");
 
   document.getElementById("output").innerHTML = `
     <strong>Converted Times:</strong><br><br>
     🇮🇳 IST: ${ist}<br>
     🇺🇸 EST: ${est}<br>
-    🇬🇧 UK: ${uk}
+    🌍 GMT: ${gmt}
   `;
 }
 </script>
+
+</body>
+</html>
 
 </body>
 </html>
