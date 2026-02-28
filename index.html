@@ -14,12 +14,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
 
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: 'Poppins', sans-serif;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
 
     body {
       min-height: 100vh;
@@ -42,17 +37,7 @@
       text-align: center;
     }
 
-    h1 {
-      font-size: 28px;
-      margin-bottom: 10px;
-      font-weight: 700;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      opacity: 0.7;
-      margin-bottom: 25px;
-    }
+    h1 { font-size: 28px; margin-bottom: 10px; font-weight: 700; }
 
     label {
       font-size: 13px;
@@ -74,10 +59,6 @@
       color: white;
     }
 
-    input::placeholder {
-      color: rgba(255,255,255,0.6);
-    }
-
     button {
       width: 100%;
       padding: 12px;
@@ -88,6 +69,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: 0.3s ease;
+      margin-top: 6px;
     }
 
     button:hover {
@@ -95,10 +77,7 @@
       box-shadow: 0 10px 20px rgba(0,114,255,0.4);
     }
 
-    .results {
-      margin-top: 25px;
-      text-align: left;
-    }
+    .results { margin-top: 25px; text-align: left; }
 
     .time-box {
       background: rgba(255,255,255,0.12);
@@ -111,36 +90,18 @@
       font-weight: 500;
     }
 
-    .zone {
-      opacity: 0.7;
-      font-size: 13px;
-    }
+    .zone { opacity: 0.7; font-size: 13px; }
+    .time { font-size: 16px; font-weight: 600; }
 
-    .time {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
-    /* Mobile adjustments */
     @media (max-width: 480px) {
-      .card {
-        padding: 30px 20px;
-        border-radius: 16px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
-
-      .time {
-        font-size: 18px;
-      }
+      .card { padding: 30px 20px; border-radius: 16px; }
+      h1 { font-size: 24px; }
+      .time { font-size: 18px; }
     }
   </style>
 </head>
 
 <body>
-
   <div class="card">
     <h1>💪 Gym Timezone</h1>
 
@@ -150,17 +111,22 @@
     <label>Select Timezone</label>
     <select id="timezoneSelect">
       <option value="Asia/Kolkata">🇮🇳 IST</option>
-      <option value="America/New_York">🇺🇸 EST</option>
-      <option value="UTC">🌍 GMT</option>
+      <option value="America/New_York">🇺🇸 ET</option>
+      <option value="UTC">🇬🇧 GMT</option>
     </select>
 
     <button onclick="convertTime()">Convert Time</button>
+
+    <!-- NEW: Share button -->
+    <button id="shareBtn" style="display:none;">Share this time</button>
 
     <div class="results" id="output"></div>
   </div>
 
 <script>
 const { DateTime } = luxon;
+
+let lastShareText = "";
 
 function convertTime() {
   const timeValue = document.getElementById("timeInput").value;
@@ -175,34 +141,43 @@ function convertTime() {
 
   const baseTime = DateTime.now()
     .setZone(selectedZone)
-    .set({ hour: parseInt(hour), minute: parseInt(minute), second: 0 });
+    .set({ hour: parseInt(hour), minute: parseInt(minute), second: 0, millisecond: 0 });
 
-  const ist = baseTime.setZone("Asia/Kolkata").toFormat("hh:mm a");
-  const est = baseTime.setZone("America/New_York").toFormat("hh:mm a");
-  const gmt = baseTime.setZone("UTC").toFormat("hh:mm a");
+  const ist = baseTime.setZone("Asia/Kolkata").toFormat("h:mma").toLowerCase();
+  const nyc = baseTime.setZone("America/New_York").toFormat("h:mma").toLowerCase();
+  const utc = baseTime.setZone("UTC").toFormat("h:mma").toLowerCase();
 
   document.getElementById("output").innerHTML = `
     <div class="time-box">
-      <div>
-        <div class="zone">🇮🇳 IST</div>
-      </div>
-      <div class="time">${ist}</div>
+      <div><div class="zone">🇮🇳 IST</div></div>
+      <div class="time">${baseTime.setZone("Asia/Kolkata").toFormat("hh:mm a")}</div>
     </div>
 
     <div class="time-box">
-      <div>
-        <div class="zone">🇺🇸 EST</div>
-      </div>
-      <div class="time">${est}</div>
+      <div><div class="zone">🇺🇸 ET</div></div>
+      <div class="time">${baseTime.setZone("America/New_York").toFormat("hh:mm a")}</div>
     </div>
 
     <div class="time-box">
-      <div>
-        <div class="zone">🌍 GMT</div>
-      </div>
-      <div class="time">${gmt}</div>
+      <div><div class="zone">🇬🇧 GMT</div></div>
+      <div class="time">${baseTime.setZone("UTC").toFormat("hh:mm a")}</div>
     </div>
   `;
+
+  // NEW: build share text + enable button
+  lastShareText = `I'll be at the gym at ${ist} India  / ${nyc} US / ${utc} UK`;
+
+  const shareBtn = document.getElementById("shareBtn");
+  shareBtn.style.display = "block";
+  shareBtn.onclick = async () => {
+    try {
+      await navigator.clipboard.writeText(lastShareText);
+      shareBtn.textContent = "Copied ✅";
+      setTimeout(() => (shareBtn.textContent = "Share this time"), 1200);
+    } catch (e) {
+      alert("Couldn’t copy to clipboard (browser blocked it).");
+    }
+  };
 }
 </script>
 
